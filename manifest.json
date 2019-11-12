@@ -1,0 +1,9 @@
+{
+  "name": "AudioViz",
+  "version": "1.0.0",
+  "description": "Audio visualizer",
+  "author": "Vap0r1ze#0126",
+  "license": "MIT",
+  "permissions": [ "use_eud" ]
+}
+  
