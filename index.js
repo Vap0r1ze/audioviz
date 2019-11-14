@@ -75,7 +75,7 @@ module.exports = class AudioViz extends Plugin {
               const data = []
               let i
               for (i = 0; i < barCount; i++) {
-                data.push(Math.round(easeInOutCubic(Math.min(1, dataArray[i * 2] / 255)) * visualizer.height))
+                data.push(visualizer.height - Math.round(easeInOutCubic(Math.min(1, dataArray[i * 2] / 255)) * visualizer.height))
               }
               ctx.fillStyle = '#292b2f'
               ctx.fillRect(0, 0, visualizer.width, visualizer.height)
