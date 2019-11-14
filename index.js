@@ -45,36 +45,24 @@ module.exports = class AudioViz extends Plugin {
             const analyser = audioCtx.createAnalyser()
             audio.connect(analyser)
             analyser.fftSize = 1024
-            let accountContainer = document.querySelector('.pc-panels > .pc-container:last-child')
-            let visualizer = document.createElement('div')
+            let accountContainer
+            let visualizer = document.createElement('canvas')
+            let ctx = visualizer.getContext('2d')
             visualizer.classList.add('vp-audioviz-visualizer')
-            for (let i = 0; i < barCount; i++) {
-              let bar = document.createElement('div')
-              bar.classList.add('vp-audioviz-bar')
-              bar.style.height = Math.round(Math.random() * 90) + 5 + 'px'
-              visualizer.appendChild(bar)
-            }
-            const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-            visualizerGoo.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://www.w3.org/2000/svg')
-            visualizerGoo.setAttributeNS('http://www.w3.org/2000/version/', 'version', '1.1')
-            visualizerGoo.classList.add('vp-audioviz-goo')
-            visualizerGoo.innerHTML = `
-              <filter id="vpVisualizerGoo">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
-                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="vpVisualizerGoo"></feColorMatrix>
-                <feComposite in="SourceGraphic" in2="vpVisualizerGoo" operator="atop"></feComposite>
-              </filter>
-            `
-            
+
             const findElement = setInterval(() => {
               if (accountContainer) {
-                visualizer = document.querySelector('.vp-audioviz-visualizer')                
+                visualizer = document.querySelector('.vp-audioviz-visualizer')
               } else {
                 accountContainer = document.querySelector('.pc-panels > .pc-container:last-child')
                 if (accountContainer) {
                   accountContainer.prepend(visualizer)
-                  accountContainer.prepend(visualizerGoo)
                 }
+              }
+              if (visualizer) {
+                visualizer.height = visualizer.clientHeight
+                visualizer.width = visualizer.clientWidth
+                ctx = visualizer.getContext('2d')
               }
             }, 1000)
 
@@ -83,13 +71,27 @@ module.exports = class AudioViz extends Plugin {
               const bufferLength = analyser.frequencyBinCount
               const dataArray = new Uint8Array(bufferLength)
               analyser.getByteFrequencyData(dataArray)
-              
-              for (let i = 0; i < barCount; i++) {
-                const y = dataArray[i * 2]
-                const height = easeInOutCubic(Math.min(1, y / 255)) * 100 + 50
-                const bar = visualizer.children[i]
-                bar.style.height = height + '%'
+              const xStep = visualizer.width / (barCount - 1)
+              const data = []
+              let i
+              for (i = 0; i < barCount; i++) {
+                data.push(Math.round(easeInOutCubic(Math.min(1, dataArray[i * 2] / 255)) * visualizer.height))
               }
+              ctx.fillStyle = '#292b2f'
+              ctx.fillRect(0, 0, visualizer.width, visualizer.height)
+
+              ctx.beginPath()
+              ctx.moveTo(0, data[0])
+              for (i = 1; i < data.length - 2; i++) {
+                const x = xStep * i
+                ctx.quadraticCurveTo(x, data[i], x + xStep * .5, (data[i + 1] + data[i]) / 2);
+              }
+              ctx.quadraticCurveTo(xStep * i, data[i], xStep * (i + .5), (data[i + 1] + data[i]) / 2)
+              ctx.lineTo(xStep * ++i, data[i])
+              ctx.lineTo(visualizer.width, visualizer.height)
+              ctx.lineTo(0, visualizer.height)
+              ctx.fillStyle = '#7289da'
+              ctx.fill()
             }, 20)
             this.intervals = [ style, findElement ]
           } catch (e) {
