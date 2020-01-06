@@ -1,4 +1,5 @@
 const { Plugin } = require('powercord/entities')
+const { getModule } = require('powercord/webpack')
 const { resolve } = require('path')
 
 module.exports = class AudioViz extends Plugin {
@@ -21,6 +22,8 @@ module.exports = class AudioViz extends Plugin {
   startVisualizer () {
     const { desktopCapturer } = require('electron')
     desktopCapturer.getSources({ types: [ 'window', 'screen' ] }).then(async sources => {
+      const { panels } = await getModule(m => m.panels && m.sidebar)
+      const { container } = await getModule(m => m.container && m.nameTag)
       for (const source of sources) {
         if (source.name.includes('Discord')) {
           try {
@@ -45,7 +48,7 @@ module.exports = class AudioViz extends Plugin {
             const analyser = audioCtx.createAnalyser()
             audio.connect(analyser)
             analyser.fftSize = 1024
-            let accountContainer = document.querySelector('.pc-panels > .pc-container:last-child')
+            let accountContainer = document.querySelector(`.${panels} > .${container}:last-child`)
             let visualizer = document.createElement('div')
             visualizer.classList.add('vp-audioviz-visualizer')
             for (let i = 0; i < barCount; i++) {
@@ -65,12 +68,12 @@ module.exports = class AudioViz extends Plugin {
                 <feComposite in="SourceGraphic" in2="vpVisualizerGoo" operator="atop"></feComposite>
               </filter>
             `
-            
+
             const findElement = setInterval(() => {
               if (accountContainer) {
-                visualizer = document.querySelector('.vp-audioviz-visualizer')                
+                visualizer = document.querySelector('.vp-audioviz-visualizer')
               } else {
-                accountContainer = document.querySelector('.pc-panels > .pc-container:last-child')
+                accountContainer = document.querySelector(`.${panels} > .${container}:last-child`)
                 if (accountContainer) {
                   accountContainer.prepend(visualizer)
                   accountContainer.prepend(visualizerGoo)
@@ -83,7 +86,7 @@ module.exports = class AudioViz extends Plugin {
               const bufferLength = analyser.frequencyBinCount
               const dataArray = new Uint8Array(bufferLength)
               analyser.getByteFrequencyData(dataArray)
-              
+
               for (let i = 0; i < barCount; i++) {
                 const y = dataArray[i * 2]
                 const height = easeInOutCubic(Math.min(1, y / 255)) * 100 + 50
