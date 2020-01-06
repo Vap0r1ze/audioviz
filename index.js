@@ -1,5 +1,4 @@
 const { Plugin } = require('powercord/entities')
-const { getModule } = require('powercord/webpack')
 const { resolve } = require('path')
 
 module.exports = class AudioViz extends Plugin {
@@ -22,8 +21,6 @@ module.exports = class AudioViz extends Plugin {
   startVisualizer () {
     const { desktopCapturer } = require('electron')
     desktopCapturer.getSources({ types: [ 'window', 'screen' ] }).then(async sources => {
-      const { panels } = await getModule(m => m.panels && m.sidebar)
-      const { container } = await getModule(m => m.container && m.nameTag)
       for (const source of sources) {
         if (source.name.includes('Discord')) {
           try {
@@ -48,7 +45,7 @@ module.exports = class AudioViz extends Plugin {
             const analyser = audioCtx.createAnalyser()
             audio.connect(analyser)
             analyser.fftSize = 1024
-            let accountContainer = document.querySelector(`.${panels} > .${container}:last-child`)
+            let accountContainer = document.querySelector('.panels-j1Uci_ > .container-3baos1:last-child')
             let visualizer = document.createElement('div')
             visualizer.classList.add('vp-audioviz-visualizer')
             for (let i = 0; i < barCount; i++) {
@@ -73,7 +70,7 @@ module.exports = class AudioViz extends Plugin {
               if (accountContainer) {
                 visualizer = document.querySelector('.vp-audioviz-visualizer')
               } else {
-                accountContainer = document.querySelector(`.${panels} > .${container}:last-child`)
+                accountContainer = document.querySelector('.panels-j1Uci_ > .container-3baos1:last-child')
                 if (accountContainer) {
                   accountContainer.prepend(visualizer)
                   accountContainer.prepend(visualizerGoo)
