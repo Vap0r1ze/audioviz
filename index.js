@@ -24,7 +24,16 @@ module.exports = class AudioViz extends Plugin {
     const { desktopCapturer } = require('electron')
     desktopCapturer.getSources({ types: ['window', 'screen'] }).then(async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true
+        audio: {
+          mandatory: {
+            chromeMediaSource: 'desktop'
+          }
+        },
+        video: {
+          mandatory: {
+            chromeMediaSource: 'desktop'
+          }
+        }
       })
 
       const audioCtx = new AudioContext()
