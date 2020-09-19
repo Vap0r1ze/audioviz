@@ -50,7 +50,7 @@ module.exports = class AudioViz extends Plugin {
       for (let i = 0; i < barCount; i++) {
         let bar = document.createElement('div')
         bar.classList.add('vp-audioviz-bar')
-        bar.style.height = Math.round(Math.random() * 90) + 5 + 'px'
+        bar.style.height = "100%";
         visualizer.appendChild(bar)
       }
       const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -76,8 +76,7 @@ module.exports = class AudioViz extends Plugin {
           }
         }
       }, 1000)
-
-      const style = setInterval(() => {
+      const func = () => {
         if (!visualizer) return
         const bufferLength = analyser.frequencyBinCount
         const dataArray = new Uint8Array(bufferLength)
@@ -87,9 +86,11 @@ module.exports = class AudioViz extends Plugin {
           const y = dataArray[i * 2]
           const height = easeInOutCubic(Math.min(1, y / 255)) * 100 + 50
           const bar = visualizer.children[i]
-          bar.style.height = height + '%'
+          bar.style.transform = `scale(1, ${height / 75})`;
         }
-      }, 20)
+        requestAnimationFrame(func)
+      }
+      const style = requestAnimationFrame(func)
       this.intervals = [ style, findElement ]
     }).catch(error => {
       console.error('An error occurred getting media sources', error)
