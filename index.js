@@ -14,10 +14,17 @@ module.exports = class AudioViz extends Plugin {
     this.startVisualizer()
   }
 
+  pluginWillUnload() {
+    this.stopVisualizer()
+  }
+
   stopVisualizer () {
-    for (const interval of this.intervals) {
-      clearInterval(interval)
-    }
+      clearInterval(this.interval)
+      cancelAnimationFrame(this.frame)
+      const filter = document.getElementById('vp-audioviz-goo');
+      const viz = document.getElementById('vp-audioviz-visualizer');
+      filter.parentNode.removeChild(filter);
+      viz.parentNode.removeChild(viz);
   }
 
   startVisualizer () {
@@ -47,16 +54,18 @@ module.exports = class AudioViz extends Plugin {
       let accountContainer
       let visualizer = document.createElement('div')
       visualizer.classList.add('vp-audioviz-visualizer')
+      visualizer.id = 'vp-audioviz-visualizer'
       for (let i = 0; i < barCount; i++) {
         let bar = document.createElement('div')
         bar.classList.add('vp-audioviz-bar')
-        bar.style.height = Math.round(Math.random() * 90) + 5 + 'px'
+        bar.style.height = "1px";
         visualizer.appendChild(bar)
       }
       const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
       visualizerGoo.setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://www.w3.org/2000/svg')
       visualizerGoo.setAttributeNS('http://www.w3.org/2000/version/', 'version', '1.1')
       visualizerGoo.classList.add('vp-audioviz-goo')
+      visualizerGoo.id = 'vp-audioviz-goo'
       visualizerGoo.innerHTML = `
         <filter id="vpVisualizerGoo">
           <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur"></feGaussianBlur>
@@ -76,8 +85,7 @@ module.exports = class AudioViz extends Plugin {
           }
         }
       }, 1000)
-
-      const style = setInterval(() => {
+      const func = () => {
         if (!visualizer) return
         const bufferLength = analyser.frequencyBinCount
         const dataArray = new Uint8Array(bufferLength)
@@ -85,12 +93,15 @@ module.exports = class AudioViz extends Plugin {
 
         for (let i = 0; i < barCount; i++) {
           const y = dataArray[i * 2]
-          const height = easeInOutCubic(Math.min(1, y / 255)) * 100 + 50
+          const height = easeInOutCubic(Math.min(1, y / 255)) * 100
           const bar = visualizer.children[i]
-          bar.style.height = height + '%'
+          bar.style.transform = `scale(1, ${height})`;
         }
-      }, 20)
-      this.intervals = [ style, findElement ]
+        requestAnimationFrame(func)
+      }
+      const style = requestAnimationFrame(func)
+      this.interval = findElement;
+      this.frame = style
     }).catch(error => {
       console.error('An error occurred getting media sources', error)
     })
