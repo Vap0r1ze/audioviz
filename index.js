@@ -58,7 +58,7 @@ module.exports = class AudioViz extends Plugin {
       for (let i = 0; i < barCount; i++) {
         let bar = document.createElement('div')
         bar.classList.add('vp-audioviz-bar')
-        bar.style.height = "100%";
+        bar.style.height = "1.5px";
         visualizer.appendChild(bar)
       }
       const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
@@ -93,9 +93,9 @@ module.exports = class AudioViz extends Plugin {
 
         for (let i = 0; i < barCount; i++) {
           const y = dataArray[i * 2]
-          const height = easeInOutCubic(Math.min(1, y / 255)) * 100 + 50
+          const height = easeInOutCubic(Math.min(1, y / 255)) * 100
           const bar = visualizer.children[i]
-          bar.style.transform = `scale(1, ${height / 50})`;
+          bar.style.transform = `scale(1, ${height})`;
         }
         requestAnimationFrame(func)
       }
