@@ -58,7 +58,7 @@ module.exports = class AudioViz extends Plugin {
       for (let i = 0; i < barCount; i++) {
         let bar = document.createElement('div')
         bar.classList.add('vp-audioviz-bar')
-        bar.style.height = "1.5px";
+        bar.style.height = "1px";
         visualizer.appendChild(bar)
       }
       const visualizerGoo = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
